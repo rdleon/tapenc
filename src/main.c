@@ -150,17 +150,45 @@ int main(int argc, char *argv[])
         }
         fclose(fd);
         
-        /* Add error correction */
-        size_t encoded_size = file_size + ecc_bytes;
+        /* Add error correction with chunking */
+        size_t chunk_size = 255 - ecc_bytes;
+        size_t num_chunks = (file_size + chunk_size - 1) / chunk_size;
+        size_t encoded_size = 4 + num_chunks * 255;  /* 4 bytes header + chunks */
         uint8_t *encoded_data = malloc(encoded_size);
-        size_t actual_encoded = 0;
-        
-        if (rs_encode(input_data, file_size, encoded_data, &actual_encoded, ecc_bytes) != 0) {
-            fprintf(stderr, "Error: Reed-Solomon encoding failed\n");
+        if (!encoded_data) {
+            fprintf(stderr, "Error: Memory allocation failed\n");
             free(input_data);
-            free(encoded_data);
             return 1;
         }
+        
+        /* Write original file size to header */
+        memcpy(encoded_data, &file_size, 4);
+        
+        size_t encoded_offset = 4;
+        for (size_t i = 0; i < num_chunks; i++) {
+            size_t start = i * chunk_size;
+            size_t len = (start + chunk_size > file_size) ? file_size - start : chunk_size;
+            
+            uint8_t chunk[chunk_size];
+            memcpy(chunk, &input_data[start], len);
+            if (len < chunk_size) {
+                memset(&chunk[len], 0, chunk_size - len);  /* Pad with zeros */
+            }
+            
+            uint8_t encoded_chunk[255];
+            size_t chunk_encoded_len = 0;
+            if (rs_encode(chunk, chunk_size, encoded_chunk, &chunk_encoded_len, ecc_bytes) != 0) {
+                fprintf(stderr, "Error: Reed-Solomon encoding failed for chunk %zu\n", i);
+                free(input_data);
+                free(encoded_data);
+                return 1;
+            }
+            
+            memcpy(&encoded_data[encoded_offset], encoded_chunk, 255);
+            encoded_offset += 255;
+        }
+        
+        size_t actual_encoded = encoded_size;
         
         /* QPSK modulate */
         size_t max_samples = actual_encoded * 8 * QPSK_SAMPLES_PER_SYMBOL;
@@ -186,7 +214,7 @@ int main(int argc, char *argv[])
         
         printf("Encode successful:\n");
         printf("  Input size: %zu bytes\n", file_size);
-        printf("  Encoded size (with ECC): %zu bytes\n", actual_encoded);
+        printf("  Encoded size (with ECC and chunking): %zu bytes\n", actual_encoded);
         printf("  Audio samples: %zu\n", num_samples);
         printf("  Duration: %.2f seconds\n", (float)num_samples / sample_rate);
         
@@ -223,17 +251,57 @@ int main(int argc, char *argv[])
             return 1;
         }
         
-        /* Decode error correction */
-        size_t output_len = 0;
-        uint8_t *output_data = malloc(encoded_len);
-        
-        if (rs_decode(encoded_data, encoded_len, output_data, &output_len, ecc_bytes) < 0) {
-            fprintf(stderr, "Error: Reed-Solomon decoding failed\n");
+        /* Decode error correction with chunking */
+        if (encoded_len < 4) {
+            fprintf(stderr, "Error: Encoded data too short for header\n");
             wav_free(audio_samples);
             free(encoded_data);
-            free(output_data);
             return 1;
         }
+        
+        uint32_t original_size;
+        memcpy(&original_size, encoded_data, 4);
+        
+        size_t chunk_size = 255 - ecc_bytes;
+        size_t data_start = 4;
+        size_t total_encoded = encoded_len - 4;
+        
+        if (total_encoded % 255 != 0) {
+            fprintf(stderr, "Error: Encoded data size not multiple of chunk size\n");
+            wav_free(audio_samples);
+            free(encoded_data);
+            return 1;
+        }
+        
+        size_t num_chunks = total_encoded / 255;
+        uint8_t *output_data = malloc(original_size);
+        if (!output_data) {
+            fprintf(stderr, "Error: Memory allocation failed\n");
+            wav_free(audio_samples);
+            free(encoded_data);
+            return 1;
+        }
+        
+        size_t output_offset = 0;
+        for (size_t i = 0; i < num_chunks; i++) {
+            uint8_t *chunk_encoded = &encoded_data[data_start + i * 255];
+            uint8_t chunk_decoded[chunk_size];
+            size_t decoded_len = 0;
+            
+            if (rs_decode(chunk_encoded, 255, chunk_decoded, &decoded_len, ecc_bytes) < 0) {
+                fprintf(stderr, "Error: Reed-Solomon decoding failed for chunk %zu\n", i);
+                wav_free(audio_samples);
+                free(encoded_data);
+                free(output_data);
+                return 1;
+            }
+            
+            size_t to_copy = (output_offset + chunk_size > original_size) ? original_size - output_offset : chunk_size;
+            memcpy(&output_data[output_offset], chunk_decoded, to_copy);
+            output_offset += to_copy;
+        }
+        
+        size_t output_len = original_size;
         
         /* Write output file */
         FILE *fo = fopen(output_file, "wb");
@@ -248,7 +316,7 @@ int main(int argc, char *argv[])
         fclose(fo);
         
         printf("Decode successful:\n");
-        printf("  Encoded size: %zu bytes\n", encoded_len);
+        printf("  Encoded size (with header and chunking): %zu bytes\n", encoded_len);
         printf("  Output size: %zu bytes\n", output_len);
         
         wav_free(audio_samples);

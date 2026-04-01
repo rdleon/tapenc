@@ -40,6 +40,15 @@ test: $(TARGET)
 		echo "Original:"; cat /tmp/test_input.txt; \
 		echo "\nDecoded:"; cat /tmp/test_decoded.txt; \
 	fi
+	@echo "Test 4: Large file encoding/decoding..."
+	$(TARGET) -e README.md /tmp/test_large.wav
+	$(TARGET) -d /tmp/test_large.wav /tmp/test_large_decoded.md
+	@if diff README.md /tmp/test_large_decoded.md > /dev/null 2>&1; then \
+		echo "✓ Large file encode/decode test passed!"; \
+	else \
+		echo "✗ Large file encode/decode test failed!"; \
+	fi
+	@rm -f /tmp/test_input.txt /tmp/test_output.wav /tmp/test_decoded.txt /tmp/test_large.wav /tmp/test_large_decoded.md
 	@rm -f /tmp/test_input.txt /tmp/test_output.wav /tmp/test_decoded.txt
 
 $(BIN_DIR)/test_%: $(TEST_DIR)/test_%.c $(TEST_OBJECTS) $(HEADERS)
