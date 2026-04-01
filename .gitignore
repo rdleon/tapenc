@@ -1,0 +1,24 @@
+# Build artifacts
+bin/
+*.o
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Test outputs
+/tmp/test_*
+
+# Audio files
+*.wav
+*.mp3
+*.flac
+
+# OS specific
+Thumbs.db
+.DS_Store
+*.exe
