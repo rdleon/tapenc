@@ -1,6 +1,6 @@
-# Audio Encoder - QPSK Modulation for Cassette Tapes
+# Cassette Encoder (cassenc) - QPSK Modulation for Cassette Tapes
 
-A C-based command-line tool for encoding and decoding data as audio signals using QPSK (Quadrature Phase Shift Keying) modulation, optimized for cassette tape storage on standard tape decks using the C90 standard.
+A C-based command-line tool `cassenc` for encoding and decoding data as audio signals using QPSK (Quadrature Phase Shift Keying) modulation, optimized for cassette tape storage on standard tape decks using the C90 standard.
 
 ## Features
 
@@ -41,7 +41,7 @@ A C-based command-line tool for encoding and decoding data as audio signals usin
 ### Compile
 
 ```bash
-cd /home/rdleon/src/encoder
+cd ${SRC_DIR}/encoder
 make
 ```
 
@@ -62,13 +62,13 @@ make clean
 ### Encode Data to Audio
 
 ```bash
-./bin/encoder -m encode -i inputfile.bin -o output.wav
+./bin/cassenc -e inputfile.bin output.wav
 ```
 
 ### Decode Audio to Data
 
 ```bash
-./bin/encoder -m decode -i input.wav -o outputfile.bin
+./bin/cassenc -d input.wav outputfile.bin
 ```
 
 ### Command-Line Options
@@ -136,7 +136,7 @@ encoder/
 
 2. **Encode to audio**:
    ```bash
-   ./bin/encoder -m encode -i data.txt -o cassette.wav -r 16000 -f 1200 -e 32
+   ./bin/cassenc -e -r 16000 -f 1200 -p 32 data.txt cassette.wav
    ```
 
 3. **Record to cassette** (using standard audio recorder):
@@ -147,7 +147,7 @@ encoder/
 
 4. **Playback and decode**:
    ```bash
-   ./bin/encoder -m decode -i playback.wav -o recovered.txt
+   ./bin/cassenc -d playback.wav recovered.txt
    ```
 
 ## Performance Notes

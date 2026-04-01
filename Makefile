@@ -7,7 +7,7 @@ TEST_DIR = tests
 SOURCES = $(SRC_DIR)/main.c $(SRC_DIR)/qpsk.c $(SRC_DIR)/wav.c $(SRC_DIR)/reed_solomon.c
 HEADERS = $(wildcard include/*.h)
 OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(SOURCES))
-TARGET = $(BIN_DIR)/encoder
+TARGET = $(BIN_DIR)/cassenc
 
 TEST_SOURCES = test_qpsk.c test_reed_solomon.c
 TEST_TARGETS = $(patsubst %.c,$(BIN_DIR)/%,$(TEST_SOURCES))
@@ -62,8 +62,8 @@ clean:
 	@echo "Clean complete"
 
 help:
-	@echo "Audio Encoder - Makefile targets:"
-	@echo "  all      - Build the encoder executable"
+	@echo "Cassette Encoder - Makefile targets:"
+	@echo "  all      - Build the cassenc executable"
 	@echo "  test     - Run integration tests (encode/decode round-trip)"
 	@echo "  tests    - Run all unit tests (QPSK and Reed-Solomon)"
 	@echo "  clean    - Remove build artifacts"
