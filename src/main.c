@@ -14,7 +14,7 @@ typedef enum {
 
 void print_usage(const char *prog)
 {
-    printf("Audio Encoder - QPSK Modulation for Cassette Tapes\n");
+    printf("Tape Encoder - QPSK Modulation for Cassette Tapes\n");
     printf("Usage: %s -e|-d [OPTIONS] INPUT OUTPUT\n\n", prog);
     printf("Modes:\n");
     printf("  -e                          Encode mode (data → audio)\n");

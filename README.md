@@ -1,6 +1,6 @@
-# Cassette Encoder (cassenc) - QPSK Modulation for Cassette Tapes
+# Tape Encoder (tapenc) - QPSK Modulation for Cassette Tapes
 
-A C-based command-line tool `cassenc` for encoding and decoding data as audio signals using QPSK (Quadrature Phase Shift Keying) modulation, optimized for cassette tape storage on standard tape decks using the C90 standard.
+A C-based command-line tool `tapenc` for encoding and decoding data as audio signals using QPSK (Quadrature Phase Shift Keying) modulation, optimized for cassette tape storage on standard tape decks using the C90 standard.
 
 ## Features
 
@@ -62,13 +62,13 @@ make clean
 ### Encode Data to Audio
 
 ```bash
-./bin/cassenc -e inputfile.bin output.wav
+./bin/tapenc -e inputfile.bin output.wav
 ```
 
 ### Decode Audio to Data
 
 ```bash
-./bin/cassenc -d input.wav outputfile.bin
+./bin/tapenc -d input.wav outputfile.bin
 ```
 
 ### Command-Line Options
@@ -136,7 +136,7 @@ encoder/
 
 2. **Encode to audio**:
    ```bash
-   ./bin/cassenc -e -r 16000 -f 1200 -p 32 data.txt cassette.wav
+   ./bin/tapenc -e -r 16000 -f 1200 -p 32 data.txt cassette.wav
    ```
 
 3. **Record to cassette** (using standard audio recorder):
@@ -147,7 +147,7 @@ encoder/
 
 4. **Playback and decode**:
    ```bash
-   ./bin/cassenc -d playback.wav recovered.txt
+   ./bin/tapenc -d playback.wav recovered.txt
    ```
 
 ## Performance Notes
