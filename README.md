@@ -159,7 +159,7 @@ encoder/
 
 ## Future Enhancements
 
-- [ ] Implement full Berlekamp-Massey syndrome decoder for Reed-Solomon
+- [x] Implement full Berlekamp-Massey syndrome decoder for Reed-Solomon
 - [ ] Add frequency synchronization/lock detection
 - [ ] Implement adaptive equalization for cassette tape playback
 - [ ] Add file header with metadata (filename, size, checksum)
